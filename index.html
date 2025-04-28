@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Personal Finance Dashboard - Track and visualize your spending patterns">
+    <meta name="author" content="Thanakrit Punyasuntomtamrong">
+    <title>Personal Finance Dashboard</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💰</text></svg>">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- D3.js and related libraries -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://unpkg.com/topojson@3"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-cloud/1.2.5/d3.layout.cloud.min.js"></script>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo-container">
+                <i class="fas fa-chart-pie logo-icon"></i>
+                <h1>Personal Finance Dashboard</h1>
+            </div>
+            <div class="control-panel">
+                <div class="time-filter">
+                    <label for="date-range"><i class="fas fa-calendar-alt"></i> Time Period:</label>
+                    <select id="date-range">
+                        <option value="1m">Last Month</option>
+                        <option value="3m">Last 3 Months</option>
+                        <option value="6m">Last 6 Months</option>
+                        <option value="1y" selected>Last Year</option>
+                        <option value="all">All Time</option>
+                    </select>
+                </div>
+                <div class="view-toggle">
+                    <button id="dark-mode-toggle"><i class="fas fa-moon"></i></button>
+                    <button id="refresh-data"><i class="fas fa-sync-alt"></i></button>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <div class="dashboard-container">
+        <!-- Summary Cards Section -->
+        <section class="dashboard-summary">
+            <div class="summary-card" id="total-income">
+                <div class="card-icon"><i class="fas fa-arrow-down"></i></div>
+                <div class="card-content">
+                    <h3>Total Income</h3>
+                    <p class="amount">$0.00</p>
+                    <p class="trend"><span class="positive"><i class="fas fa-arrow-up"></i> 0%</span> vs previous period</p>
+                </div>
+            </div>
+            <div class="summary-card" id="total-expenses">
+                <div class="card-icon"><i class="fas fa-arrow-up"></i></div>
+                <div class="card-content">
+                    <h3>Total Expenses</h3>
+                    <p class="amount">$0.00</p>
+                    <p class="trend"><span class="negative"><i class="fas fa-arrow-up"></i> 0%</span> vs previous period</p>
+                </div>
+            </div>
+            <div class="summary-card" id="savings">
+                <div class="card-icon"><i class="fas fa-piggy-bank"></i></div>
+                <div class="card-content">
+                    <h3>Net Savings</h3>
+                    <p class="amount">$0.00</p>
+                    <p class="trend"><span class="neutral"><i class="fas fa-equals"></i> 0%</span> vs previous period</p>
+                </div>
+            </div>
+            <div class="summary-card" id="top-category">
+                <div class="card-icon"><i class="fas fa-tag"></i></div>
+                <div class="card-content">
+                    <h3>Top Spending Category</h3>
+                    <p class="category">None</p>
+                    <p class="category-amount">$0.00</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Main Visualizations -->
+        <section class="visualizations-container">
+            <!-- Numerical Data Visualization: Bar Chart -->
+            <div class="visualization-row">
+                <div class="visualization-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-chart-bar"></i> Monthly Expenses by Category</h2>
+                        <div class="card-actions">
+                            <button class="download-btn" data-chart="bar-chart"><i class="fas fa-download"></i></button>
+                            <button class="info-btn" data-info="bar-chart-info"><i class="fas fa-info-circle"></i></button>
+                        </div>
+                    </div>
+                    <div class="card-info" id="bar-chart-info" style="display: none;">
+                        <p>This chart shows your spending by category. Hover over bars to see exact amounts.</p>
+                    </div>
+                    <div id="bar-chart" class="chart-container"></div>
+                </div>
+            </div>
+            
+            <!-- Spatial Data Visualization: Map -->
+            <div class="visualization-row">
+                <div class="visualization-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-map-marked-alt"></i> Spending Map</h2>
+                        <div class="card-actions">
+                            <button class="download-btn" data-chart="spending-map"><i class="fas fa-download"></i></button>
+                            <button class="info-btn" data-info="map-info"><i class="fas fa-info-circle"></i></button>
+                        </div>
+                    </div>
+                    <div class="card-info" id="map-info" style="display: none;">
+                        <p>This map shows where your money is being spent geographically. Larger circles indicate more spending in that location. Hover over circles to see transaction details.</p>
+                    </div>
+                    <div id="spending-map" class="chart-container"></div>
+                </div>
+            </div>
+            
+            <!-- Textual Data Visualization: Word Cloud -->
+            <div class="visualization-row">
+                <div class="visualization-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-cloud"></i> Merchant Word Cloud</h2>
+                        <div class="card-actions">
+                            <button class="download-btn" data-chart="word-cloud"><i class="fas fa-download"></i></button>
+                            <button class="info-btn" data-info="cloud-info"><i class="fas fa-info-circle"></i></button>
+                        </div>
+                    </div>
+                    <div class="card-info" id="cloud-info" style="display: none;">
+                        <p>This word cloud visualizes your spending by merchant. Larger text indicates more spending at that merchant. Hover over text to see exact amounts and transaction counts.</p>
+                    </div>
+                    <div id="word-cloud" class="chart-container"></div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Additional Analysis Section -->
+        <section class="additional-analysis">
+            <div class="visualization-row">
+                <div class="visualization-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-chart-line"></i> Financial Insights</h2>
+                    </div>
+                    <div class="insights-container">
+                        <div class="insight-box">
+                            <h3><i class="fas fa-lightbulb"></i> Spending Patterns</h3>
+                            <p>See where your money is actually going each month. This dashboard shows which stores get most of your cash, what you're spending on, and where you might be overspending without realizing it.</p>
+                        </div>
+                        <div class="insight-box">
+                            <h3><i class="fas fa-piggy-bank"></i> Budget Tips</h3>
+                            <p>Looking at your top spending categories? That's where quick changes can save you serious money. Cut back just a little on your biggest expense categories and watch how quickly it adds up.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="visualization-row split-row">
+                <div class="visualization-card half-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-list-ul"></i> Recent Transactions</h2>
+                    </div>
+                    <div class="transactions-container">
+                        <div class="transaction-list" id="recent-transactions">
+                            <!-- Transactions will be populated by JavaScript -->
+                            <div class="transaction-item">
+                                <div class="transaction-date">2025-04-01</div>
+                                <div class="transaction-details">
+                                    <div class="transaction-merchant">Apartment Rentals LLC</div>
+                                    <div class="transaction-category">Housing</div>
+                                </div>
+                                <div class="transaction-amount negative">-$1,500.00</div>
+                            </div>
+                            <div class="transaction-item">
+                                <div class="transaction-date">2025-03-30</div>
+                                <div class="transaction-details">
+                                    <div class="transaction-merchant">Uber</div>
+                                    <div class="transaction-category">Transportation</div>
+                                </div>
+                                <div class="transaction-amount negative">-$110.00</div>
+                            </div>
+                            <div class="transaction-item">
+                                <div class="transaction-date">2025-03-28</div>
+                                <div class="transaction-details">
+                                    <div class="transaction-merchant">Safeway</div>
+                                    <div class="transaction-category">Groceries</div>
+                                </div>
+                                <div class="transaction-amount negative">-$68.45</div>
+                            </div>
+                            <div class="transaction-item">
+                                <div class="transaction-date">2025-03-25</div>
+                                <div class="transaction-details">
+                                    <div class="transaction-merchant">Employer Inc.</div>
+                                    <div class="transaction-category">Income</div>
+                                </div>
+                                <div class="transaction-amount positive">+$2,450.00</div>
+                            </div>
+                            <div class="transaction-item">
+                                <div class="transaction-date">2025-03-20</div>
+                                <div class="transaction-details">
+                                    <div class="transaction-merchant">Online Course Platform</div>
+                                    <div class="transaction-category">Education</div>
+                                </div>
+                                <div class="transaction-amount negative">-$250.00</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="visualization-card half-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-info-circle"></i> About This Dashboard</h2>
+                    </div>
+                    <div class="about-container">
+                        <div class="about-content">
+                            <h3>Personal Finance Dashboard</h3>
+                            <p>A visual way to track where your money is going, using D3.js to transform boring numbers into helpful insights.</p>
+                            
+                            <h4>Features:</h4>
+                            <ul>
+                                <li><strong>Numerical Data:</strong> Bar chart showing expenses by category</li>
+                                <li><strong>Spatial Data:</strong> Map showing where you spend in California</li>
+                                <li><strong>Textual Data:</strong> Word cloud of merchants sized by how much you spend there</li>
+                            </ul>
+                            
+                            <h4>How to Use:</h4>
+                            <ul>
+                                <li>Change the time period using the dropdown at the top</li>
+                                <li>Hover over charts for more details</li>
+                                <li>Toggle dark/light mode with the moon icon</li>
+                                <li>Download any chart using the download icon</li>
+                            </ul>
+                            
+                            <p class="about-footer">Created for Data Visualization Course - Spring 2025</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Personal Finance Dashboard</h4>
+                <p>HCD-101:00050 | Design a visualization for a data set, website, API</p>
+            </div>
+            <div class="footer-section">
+                <h4>Data Sources</h4>
+                <p>Personal transaction data from financial institutions</p>
+            </div>
+            <div class="footer-section">
+                <h4>Created By</h4>
+                <p>Thanakrit Punyasuntomtamrong - Spring 2025</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 | All visualizations created with D3.js</p>
+        </div>
+    </footer>
+    
+    <!-- Loading Overlay -->
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <p>Loading your financial data...</p>
+    </div>
+    
+    <!-- JavaScript Files -->
+    <script src="js/main.js"></script>
+    <script src="js/barChart.js"></script>
+    <script src="js/spendingMap.js"></script>
+    <script src="js/wordCloud.js"></script>
+    <script>
+        // Show/hide info boxes
+        document.querySelectorAll('.info-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const infoId = this.getAttribute('data-info');
+                const infoBox = document.getElementById(infoId);
+                if (infoBox.style.display === 'none') {
+                    infoBox.style.display = 'block';
+                } else {
+                    infoBox.style.display = 'none';
+                }
+            });
+        });
+        
+        // Dark mode toggle
+        document.getElementById('dark-mode-toggle').addEventListener('click', function() {
+            document.body.classList.toggle('dark-mode');
+            const icon = this.querySelector('i');
+            if (icon.classList.contains('fa-moon')) {
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+            } else {
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+            }
+        });
+        
+        // Simulate loading overlay
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                document.getElementById('loading-overlay').style.display = 'none';
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
