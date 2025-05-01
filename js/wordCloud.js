@@ -244,6 +244,7 @@ function createWordCloud(data, containerId) {
         .append("g")
         .attr("transform", `translate(${width / 2 + margin.left},${height / 2 + margin.top})`);
 
+        
     // Create tooltip
     const tooltip = d3.select("body")
         .append("div")
