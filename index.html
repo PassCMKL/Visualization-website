@@ -6,14 +6,14 @@
     <meta name="description" content="Personal Finance Dashboard - Track and visualize your spending patterns">
     <meta name="author" content="Thanakrit Punyasuntomtamrong">
     <title>Personal Finance Dashboard</title>
-    
+
     <!-- Favicon -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💰</text></svg>">
-    
+
     <!-- Stylesheets -->
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
+
     <!-- D3.js and related libraries -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://unpkg.com/topojson@3"></script>
@@ -44,7 +44,7 @@
             </div>
         </div>
     </header>
-    
+
     <div class="dashboard-container">
         <!-- Summary Cards Section -->
         <section class="dashboard-summary">
@@ -81,7 +81,7 @@
                 </div>
             </div>
         </section>
-        
+
         <!-- Main Visualizations -->
         <section class="visualizations-container">
             <!-- Numerical Data Visualization: Bar Chart -->
@@ -100,7 +100,7 @@
                     <div id="bar-chart" class="chart-container"></div>
                 </div>
             </div>
-            
+
             <!-- Spatial Data Visualization: Map -->
             <div class="visualization-row">
                 <div class="visualization-card">
@@ -117,12 +117,13 @@
                     <div id="spending-map" class="chart-container"></div>
                 </div>
             </div>
-            
+
             <!-- Textual Data Visualization: Word Cloud -->
             <div class="visualization-row">
                 <div class="visualization-card">
                     <div class="card-header">
-                        <h2><i class="fas fa-cloud"></i> Merchant Word Cloud</h2>
+                        <h2><i class="fas fa-cloud"></i> Where My Money Goes: Business Spending Word Cloud</h2>
+                        
                         <div class="card-actions">
                             <button class="download-btn" data-chart="word-cloud"><i class="fas fa-download"></i></button>
                             <button class="info-btn" data-info="cloud-info"><i class="fas fa-info-circle"></i></button>
@@ -135,7 +136,7 @@
                 </div>
             </div>
         </section>
-        
+
         <!-- Additional Analysis Section -->
         <section class="additional-analysis">
             <div class="visualization-row">
@@ -155,7 +156,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="visualization-row split-row">
                 <div class="visualization-card half-card">
                     <div class="card-header">
@@ -207,7 +208,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="visualization-card half-card">
                     <div class="card-header">
                         <h2><i class="fas fa-info-circle"></i> About This Dashboard</h2>
@@ -216,14 +217,14 @@
                         <div class="about-content">
                             <h3>Personal Finance Dashboard</h3>
                             <p>A visual way to track where your money is going, using D3.js to transform boring numbers into helpful insights.</p>
-                            
+
                             <h4>Features:</h4>
                             <ul>
                                 <li><strong>Numerical Data:</strong> Bar chart showing expenses by category</li>
                                 <li><strong>Spatial Data:</strong> Map showing where you spend in California</li>
                                 <li><strong>Textual Data:</strong> Word cloud of merchants sized by how much you spend there</li>
                             </ul>
-                            
+
                             <h4>How to Use:</h4>
                             <ul>
                                 <li>Change the time period using the dropdown at the top</li>
@@ -231,7 +232,7 @@
                                 <li>Toggle dark/light mode with the moon icon</li>
                                 <li>Download any chart using the download icon</li>
                             </ul>
-                            
+
                             <p class="about-footer">Created for Data Visualization Course - Spring 2025</p>
                         </div>
                     </div>
@@ -239,7 +240,7 @@
             </div>
         </section>
     </div>
-    
+
     <footer>
         <div class="footer-content">
             <div class="footer-section">
@@ -259,13 +260,13 @@
             <p>&copy; 2025 | All visualizations created with D3.js</p>
         </div>
     </footer>
-    
+
     <!-- Loading Overlay -->
     <div id="loading-overlay">
         <div class="spinner"></div>
         <p>Loading your financial data...</p>
     </div>
-    
+
     <!-- JavaScript Files -->
     <script src="js/main.js"></script>
     <script src="js/barChart.js"></script>
@@ -284,7 +285,7 @@
                 }
             });
         });
-        
+
         // Dark mode toggle
         document.getElementById('dark-mode-toggle').addEventListener('click', function() {
             document.body.classList.toggle('dark-mode');
@@ -297,7 +298,7 @@
                 icon.classList.add('fa-moon');
             }
         });
-        
+
         // Simulate loading overlay
         window.addEventListener('load', function() {
             setTimeout(function() {
