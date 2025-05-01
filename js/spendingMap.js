@@ -100,57 +100,8 @@ function createSpendingMap(data, containerId) {
                     .attr("stroke", "#ccc")
                     .attr("stroke-width", 0.7)
                     .attr("d", path);
-                
-                // Try to draw counties, but with error handling
-                try {
-                    // Add county borders for more detail (only if us.objects.counties exists)
-                    if (us.objects.counties) {
-                        const californiaCounties = topojson.mesh(
-                            us, 
-                            us.objects.counties, 
-                            (a, b) => a !== b && 
-                                a.id && b.id && 
-                                a.id.toString().substring(0, 2) === "06" && 
-                                b.id.toString().substring(0, 2) === "06"
-                        );
-                        
-                        if (californiaCounties) {
-                            svg.append("path")
-                                .datum(californiaCounties)
-                                .attr("fill", "none")
-                                .attr("stroke", "#ddd")
-                                .attr("stroke-width", 0.5)
-                                .attr("d", path);
-                        }
-                    }
-                } catch (countyError) {
-                    console.warn("Could not render county borders:", countyError);
-                    // Continue with the rest of the visualization
-                }
-                
-                // Add city labels for major California cities
-                const majorCities = [
-                    { name: "San Francisco", coordinates: [-122.4194, 37.7749] },
-                    { name: "Los Angeles", coordinates: [-118.2437, 34.0522] },
-                    { name: "San Diego", coordinates: [-117.1611, 32.7157] },
-                    { name: "Sacramento", coordinates: [-121.4944, 38.5816] },
-                    { name: "San Jose", coordinates: [-121.8853, 37.3382] }
-                ];
-                
-                svg.selectAll(".city-label")
-                    .data(majorCities)
-                    .enter()
-                    .append("text")
-                    .attr("class", "city-label")
-                    .attr("x", d => projection(d.coordinates)[0])
-                    .attr("y", d => projection(d.coordinates)[1] - 10)
-                    .attr("text-anchor", "middle")
-                    .style("font-size", "10px")
-                    .style("font-weight", "500")
-                    .style("fill", "#666")
-                    .text(d => d.name);
 
-                // Add spending circles with increased spacing
+                // Add spending circles
                 svg.selectAll(".spending-circle")
                     .data(locationData)
                     .enter()
@@ -167,14 +118,14 @@ function createSpendingMap(data, containerId) {
                         d3.select(this)
                             .attr("stroke", "#333")
                             .attr("stroke-width", 2);
-                            
+
                         // Format the transaction list for tooltip
                         let transactionList = d.transactions
                             .sort((a, b) => new Date(b.date) - new Date(a.date))
                             .slice(0, 3) // Show only the most recent 3 transactions
                             .map(t => `${t.date}: $${Math.abs(t.amount).toFixed(2)} at ${t.merchant}`)
                             .join("<br>");
-                            
+
                         tooltip.transition()
                             .duration(200)
                             .style("opacity", 0.9);
@@ -208,7 +159,7 @@ function createSpendingMap(data, containerId) {
                     .style("font-weight", "bold")
                     .style("fill", "#555")
                     .text("Spending Across California");
-                    
+
                 // Add subtitle
                 svg.append("text")
                     .attr("x", 20)
@@ -216,7 +167,29 @@ function createSpendingMap(data, containerId) {
                     .style("font-size", "12px")
                     .style("fill", "#777")
                     .text("Circle size represents amount spent at each location");
-                    
+
+                // Add city labels (moved to the end to render on top)
+                const majorCities = [
+                    { name: "San Francisco", coordinates: [-122.4194, 37.7749] },
+                    { name: "Los Angeles", coordinates: [-118.2437, 34.0522] },
+                    { name: "San Diego", coordinates: [-117.1611, 32.7157] },
+                    { name: "Sacramento", coordinates: [-121.4944, 38.5816] },
+                    { name: "San Jose", coordinates: [-121.8853, 37.3382] }
+                ];
+
+                svg.selectAll(".city-label")
+                    .data(majorCities)
+                    .enter()
+                    .append("text")
+                    .attr("class", "city-label")
+                    .attr("x", d => projection(d.coordinates)[0])
+                    .attr("y", d => projection(d.coordinates)[1] - 10)
+                    .attr("text-anchor", "middle")
+                    .style("font-size", "10px")
+                    .style("font-weight", "500")
+                    .style("fill", "#000")
+                    .text(d => d.name);
+
             } catch (mainError) {
                 console.error("Error processing map data:", mainError);
                 displayErrorMap(svg, width, height);
@@ -226,53 +199,8 @@ function createSpendingMap(data, containerId) {
             console.error("Error loading map data:", error);
             displayErrorMap(svg, width, height);
         });
-        
-    // Add a legend for the circle sizes
-    if (locationData.length > 0) {
-        const legendValues = [
-            d3.min(locationData, d => d.totalAmount) || 0,
-            d3.median(locationData, d => d.totalAmount) || 50,
-            d3.max(locationData, d => d.totalAmount) || 100
-        ];
-        
-        const legend = svg.append("g")
-            .attr("class", "legend")
-            .attr("transform", `translate(${width - 120}, ${height - 100})`);
-            
-        legend.append("text")
-            .attr("x", 0)
-            .attr("y", -15)
-            .style("font-size", "11px")
-            .style("font-weight", "bold")
-            .text("Spending Amount");
-            
-        legendValues.forEach((value, i) => {
-            const cy = i * 30;
-            
-            legend.append("circle")
-                .attr("cx", 0)
-                .attr("cy", cy)
-                .attr("r", radiusScale(value))
-                .attr("fill", colorScale(value))
-                .attr("fill-opacity", 0.7)
-                .attr("stroke", "#fff");
-                
-            legend.append("text")
-                .attr("x", 45)
-                .attr("y", cy + 5)
-                .style("font-size", "11px")
-                .text(`$${value.toFixed(0)}`);
-        });
-    } else {
-        // Add a notice if no geographic data is available
-        svg.append("text")
-            .attr("x", width / 2)
-            .attr("y", height / 2)
-            .attr("text-anchor", "middle")
-            .style("font-size", "14px")
-            .style("fill", "#777")
-            .text("No location data available for the selected period");
-    }
+
+    // No legend will be displayed
 }
 
 // Helper function to display error message on the map
